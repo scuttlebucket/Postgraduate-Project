@@ -1,0 +1,83 @@
+
+/* 
+    Created on : 09-Mar-2017, 12:34:50
+    Author     : johnp
+*/
+    
+body {background-color:brown;
+      
+     }
+     
+     h1,p{
+         color:greenyellow;
+     }
+     
+     div.container{     border: 3px solid green;
+                        margin-top: 20px;
+                        width: 210px;
+                        height:60px;
+                        left: 30px;
+                        padding:10px;
+                
+                   }
+     
+
+
+     
+table {
+  border-collapse: separate;
+  border-spacing: 0px 10px;
+}
+
+
+td{
+   
+    padding-left: 25px;
+}
+     
+
+     
+     th{color:greenyellow;}
+
+      
+     
+    .box1 {
+        margin: auto;
+        width: 30%;
+        height: 5%;
+        border: 3px solid green;
+        padding-left: 280px;
+        padding-bottom:5px;
+        padding-top:5px;
+        color:greenyellow;
+          } 
+      
+
+.row {
+    margin:auto;
+    padding: 20px 20px 20px 20px;
+    min-width: 500px;
+    border: 1px solid green;
+    width: 90%; /* it changes by screen size actually */
+    height: 450px;
+    
+}
+
+.row:after {
+    content: '';
+    display: inline-block;
+    width: 80%;
+}
+.col {
+    display: inline-block;
+}
+.box2, .box3, .box4, .box5 {
+    border: 3px solid green;
+    min-width: 250px;
+    height: 350px;
+    text-align: left;
+    padding-top: 20px;
+    -webkit-column-count: 3;
+    -webkit-column-gap: 30px;   
+    margin: 20px 15px 10px 39px;
+}

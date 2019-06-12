@@ -1,0 +1,718 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang6153{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\*\generator Riched20 10.0.14393}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9\par
+//package MyRestaurant;\par
+\par
+import java.awt.Container;\par
+//import java.awt.Font;\par
+import java.awt.event.ActionEvent;\par
+import java.awt.event.ItemEvent;\par
+import static java.awt.event.ItemEvent.SELECTED;\par
+import java.awt.event.WindowAdapter;\par
+import java.awt.event.WindowEvent;\par
+import static java.lang.Class.forName;\par
+import static java.lang.Integer.parseInt;\par
+import static java.lang.String.format;\par
+import static java.lang.String.valueOf;\par
+import static java.lang.System.exit;\par
+import static java.lang.System.out;\par
+import java.sql.Statement;\par
+import java.sql.Connection;\par
+import static java.sql.DriverManager.getConnection;\par
+import java.sql.ResultSet;\par
+import java.sql.SQLException;\par
+import java.util.ArrayList;\par
+import static java.util.logging.Level.SEVERE;\par
+import static java.util.logging.Logger.getLogger;\par
+import static javax.swing.BorderFactory.createEtchedBorder;\par
+import static javax.swing.BorderFactory.createTitledBorder;\par
+import javax.swing.JButton;\par
+import javax.swing.JComboBox;\par
+import javax.swing.JFrame;\par
+import javax.swing.JLabel;\par
+import static javax.swing.JOptionPane.showMessageDialog;\par
+import javax.swing.JPanel;\par
+import javax.swing.JTextField;\par
+\par
+public class RestaurantBillCalc extends JFrame \{\par
+    // JLabel for Restaurant\par
+\par
+    private JLabel restaurantJLabel;\par
+\par
+    // JPanel to display waiter information\par
+    private JPanel waiterJPanel;\par
+\par
+    // JLabel and JTextField for table number\par
+    private JLabel tableNumberJLabel;\par
+    private static JComboBox tableNumberJComboBox;\par
+\par
+    // JLabel and JTextField for waiter name\par
+    private JLabel waiterNameJLabel;\par
+    private JTextField waiterName;\par
+\par
+    // JPanel to display menu items\par
+    private JPanel menuItemsJPanel;\par
+\par
+    // JLabel and JComboBox for beverage\par
+    private JLabel beverageJLabel;\par
+    private  JComboBox beverageJComboBox;\par
+\par
+    // JLabel and JComboBox for appetizer\par
+    private JLabel appetizerJLabel;\par
+    private  JComboBox appetizerJComboBox;\par
+\par
+    // JLabel and JComboBox for main course\par
+    private JLabel mainCourseJLabel;\par
+    private  JComboBox mainCourseJComboBox;\par
+\par
+    // JLabel and JComboBox for dessert\par
+    private JLabel dessertJLabel;\par
+    private  JComboBox dessertJComboBox;\par
+\par
+    // JButton for calculate bill\par
+    private JButton calculateBillJButton;\par
+\par
+    // JLabel and JTextField for subtotal\par
+    private JLabel subtotalJLabel;\par
+    private JTextField subtotalJTextField;\par
+\par
+    // JLabel and JTextField for tax\par
+    private JLabel taxJLabel;\par
+    private JTextField taxJTextField;\par
+\par
+    // JLabel and JTextField for total\par
+    private JLabel totalJLabel;\par
+    private JTextField totalJTextField;\par
+    \par
+    //JButton for Save Table\par
+    private JButton saveTableJButton;\par
+   \par
+    private JButton payJButton;\par
+        \par
+    // constant for tax rate\par
+    private final static double TAX_RATE = 0.05;\par
+\par
+    private final String DB_URL = "jdbc:derby://localhost:1527/Restaurant";\par
+    // declare instance variables for database processing\par
+    private Connection myConnection;\par
+    private Statement myStatement;\par
+    private ResultSet myResultSet;\par
+\par
+    // declare instance variable ArrayList to hold bill items\par
+    private ArrayList billItems = new ArrayList();\par
+    private double subtotal;\par
+    private double total=0.0;\par
+    \par
+    // constructor\par
+    public RestaurantBillCalc(String databaseUser, String databasePassword) \{\par
+        createUserInterface(); // set up GUI  \par
+\par
+        try \{\par
+            //STEP 2: Register JDBC driver\par
+        \tab forName("org.apache.derby.jdbc.ClientDriver");\par
+      \par
+      \par
+            out.println("Connecting to database...");\par
+            myConnection = getConnection(DB_URL,"johnpaul","purlease");            \par
+            myStatement = myConnection.createStatement();\par
+            //myStatement.execute("CREATE database IF NOT EXISTS Restaurant");\par
+            //myStatement.execute("USE Restaurant");\par
+            \par
+            out.println("Connection Successful,database checked...");\par
+        \} catch (SQLException | ClassNotFoundException se) \{\par
+            //Handle errors for JDBC\par
+\par
+        \}\par
+        //Handle errors for Class.forName\par
+         finally \{\par
+          \par
+        \}//end try\par
+        out.println("Goodbye!");\par
+    \par
+    \}\par
+\par
+    // create and position GUI components; register event handlers\par
+    private void createUserInterface() \{\par
+        // get content pane for attaching GUI components\par
+        Container contentPane = getContentPane();\par
+\par
+        // enable explicit positioning of GUI components \par
+        contentPane.setLayout(null);\par
+        contentPane.setVisible(true);\par
+\par
+        restaurantJLabel = new JLabel("Restaurant");\par
+        restaurantJLabel.setBounds(120, 5, 160, 90);\par
+         contentPane.add(restaurantJLabel);\par
+\par
+        createWaiterJPanel();\par
+        contentPane.add(waiterJPanel);\par
+\par
+        createMenuItemsJPanel();\par
+        contentPane.add(menuItemsJPanel);\par
+\par
+        subtotalJLabel = new JLabel("Subtotal : ");\par
+        subtotalJLabel.setBounds(15, 445, 60, 40);\par
+        contentPane.add(subtotalJLabel);\par
+\par
+        subtotalJTextField = new JTextField();\par
+        subtotalJTextField.setBounds(70, 445, 140, 40);\par
+        subtotalJTextField.setEditable(true);\par
+        contentPane.add(subtotalJTextField);\par
+\par
+        taxJLabel = new JLabel("Tax : ");\par
+        taxJLabel.setBounds(15, 490, 60, 40);\par
+        contentPane.add(taxJLabel);\par
+\par
+        taxJTextField = new JTextField();\par
+        taxJTextField.setBounds(70, 490, 140, 40);\par
+        contentPane.add(taxJTextField);\par
+\par
+        totalJLabel = new JLabel("Total : ");\par
+        totalJLabel.setBounds(15, 535, 60, 40);\par
+        contentPane.add(totalJLabel);\par
+\par
+        totalJTextField = new JTextField();\par
+        totalJTextField.setBounds(70, 535, 140, 40);\par
+        contentPane.add(totalJTextField);\par
+        \par
+        saveTableJButton = new JButton("Save Table");\par
+        saveTableJButton.setBounds(220, 445, 140, 40);\par
+        saveTableJButton.setEnabled(true);\par
+        contentPane.add(saveTableJButton);\par
+        \par
+        \par
+        calculateBillJButton = new JButton("Calculate Bill");\par
+        calculateBillJButton.setBounds(220, 490, 140, 40);\par
+        calculateBillJButton.setEnabled(true);\par
+        contentPane.add(calculateBillJButton);\par
+        \par
+        payJButton = new JButton("Pay Bill");\par
+        payJButton.setBounds(220, 535, 140, 40);\par
+        payJButton.setEnabled(true);\par
+        contentPane.add(payJButton);\par
+        \par
+        \par
+     \par
+        \par
+        calculateBillJButton.addActionListener(this::calculateBillJButtonActionPerformed // anonymous inner class\par
+        // event handler called when saveTableJButton is clicked\par
+        // end anonymous inner class\par
+        ); // end addActionListener\par
+    \par
+        payJButton.addActionListener(this::payBillJButtonActionPerformed // anonymous inner class\par
+        // event handler called when saveTableJButton is clicked\par
+        // end anonymous inner class\par
+        ); \par
+        \par
+        \par
+        \par
+        saveTableJButton.addActionListener(this::saveTableJButtonActionPerformed // anonymous inner class\par
+        // event handler called when saveTableJButton is clicked\par
+        // end anonymous inner class\par
+        ); // end addActionListener\par
+     \par
+        \par
+        calculateBillJButton.setEnabled(true);\par
+        payJButton.setEnabled(true);\par
+        saveTableJButton.setEnabled(true);\par
+        \par
+        \par
+        this.setLayout(null);   //Set this to null for the parent class property\par
+        this.setVisible(true);\par
+        this.setSize(400, 770);\par
+        this.setResizable(false);\par
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);\par
+       \par
+        addWindowListener(new WindowAdapter()\par
+         \{\par
+            //  event handler called when close button is clicked\par
+            public void windowClosing( WindowEvent event )\par
+            \{\par
+               frameWindowClosing( event );\par
+                exit(0);\par
+               \par
+            \}\par
+\par
+         \} //  end anonymous inner class\par
+\par
+      ); // end addWindowListener\par
+    \} // end method createUserInterface\par
+\par
+    private void createWaiterJPanel() \{\par
+        waiterJPanel = new JPanel();\par
+        waiterJPanel.setLayout(null);\par
+        waiterJPanel.setBounds(20, 95, 360, 110);\par
+        waiterJPanel.setBorder(createTitledBorder(createEtchedBorder(), "Waiter Information"));\par
+\par
+        tableNumberJLabel = new JLabel("Table Number: ");\par
+        tableNumberJLabel.setBounds(30, 24, 100, 24);\par
+          waiterJPanel.add(tableNumberJLabel);\par
+\par
+          \par
+        tableNumberJComboBox= new JComboBox();\par
+        tableNumberJComboBox.setBounds(150, 24, 150, 24);\par
+        tableNumberJComboBox.setEnabled(true);\par
+        waiterJPanel.add(tableNumberJComboBox);\par
+        \par
+       \par
+        waiterNameJLabel = new JLabel("Waiter Name: ");\par
+        waiterNameJLabel.setBounds(30, 55, 100, 24);\par
+        waiterJPanel.add(waiterNameJLabel);\par
+\par
+        waiterName = new JTextField();\par
+        waiterName.setLayout(null);\par
+        waiterName.setBounds(150, 55, 150, 24);\par
+        waiterName.setEditable(true);\par
+        waiterJPanel.add(waiterName);\par
+        \par
+        waiterName.addActionListener((ActionEvent arg0) -> \{\par
+            // TODO Auto-generated method stub\par
+            //waiterNameActionPerformed( );\par
+        \} // **** TODO ****** anonymous inner class\par
+        // end anonymous inner class\par
+        ); // end addItemListener\par
+        \par
+\par
+    \}\par
+\par
+    // **** TODO ****** create menuItemsJPanel\par
+    private void createMenuItemsJPanel() \{\par
+        //  set up menuItemsJPanel\par
+        menuItemsJPanel = new JPanel();\par
+        menuItemsJPanel.setBounds(20, 230, 360, 152);\par
+        menuItemsJPanel.setBorder(createTitledBorder(createEtchedBorder(), "Menu Items"));\par
+        menuItemsJPanel.setLayout(null);\par
+\par
+        //  set up beverageJLabel\par
+        beverageJLabel = new JLabel();\par
+        beverageJLabel.setBounds(30, 24, 100, 24);\par
+        beverageJLabel.setText("Beverage:");\par
+        menuItemsJPanel.add(beverageJLabel);\par
+\par
+        // set up beverageJComboBox\par
+        beverageJComboBox = new JComboBox();\par
+        beverageJComboBox.setBounds(150, 24, 150, 24);\par
+        beverageJComboBox.setEnabled(true);\par
+        menuItemsJPanel.add(beverageJComboBox);\par
+        \par
+        \par
+        beverageJComboBox.addItemListener(this::beverageJComboBoxItemStateChanged // **** TODO ****** anonymous inner class\par
+        // **** TODO ****** event handler called when item in beverageJComboBox\par
+        // **** TODO ****** is selected\par
+        // end anonymous inner class\par
+        ); // end addItemListener\par
+\par
+        // **** TODO ****** add items to beverageJComboBox\par
+        beverageJComboBox.addItem("");\par
+      \par
+\par
+        \par
+        appetizerJLabel = new JLabel();\par
+        appetizerJLabel.setBounds(30, 55, 100, 24);\par
+        appetizerJLabel.setText("Appetizers:");\par
+        menuItemsJPanel.add(appetizerJLabel);\par
+\par
+        // set up beverageJComboBox\par
+        appetizerJComboBox = new JComboBox();\par
+        appetizerJComboBox.setBounds(150, 55, 150, 24);\par
+        menuItemsJPanel.add(appetizerJComboBox);\par
+        appetizerJComboBox.addItemListener(this::appetizerJComboBoxItemStateChanged // **** TODO ****** anonymous inner class\par
+        // **** TODO ****** event handler called when item in beverageJComboBox\par
+        // **** TODO ****** is selected\par
+        // end anonymous inner class\par
+        ); // end addItemListener\par
+\par
+        // **** TODO ****** add items to appetizerJComboBox\par
+        appetizerJComboBox.addItem("");\par
+      \par
+        \par
+        mainCourseJLabel = new JLabel();\par
+        mainCourseJLabel.setBounds(30, 86, 100, 24);\par
+        mainCourseJLabel.setText("Mains:");\par
+        menuItemsJPanel.add(mainCourseJLabel);\par
+\par
+        // set up beverageJComboBox\par
+        mainCourseJComboBox = new JComboBox();\par
+        mainCourseJComboBox.setBounds(150, 86, 150, 24);\par
+        menuItemsJPanel.add(mainCourseJComboBox);\par
+        mainCourseJComboBox.addItemListener(this::mainCourseJComboBoxItemStateChanged // **** TODO ****** anonymous inner class\par
+        // **** TODO ****** event handler called when item in beverageJComboBox\par
+        // **** TODO ****** is selected\par
+        // end anonymous inner class\par
+        ); // end addItemListener\par
+\par
+        // **** TODO ****** add items to mainCourseJComboBox\par
+        mainCourseJComboBox.addItem("");\par
+        \par
+        \par
+        dessertJLabel = new JLabel();\par
+        dessertJLabel.setBounds(30, 117, 100, 24);\par
+        dessertJLabel.setText("Desserts :");\par
+        menuItemsJPanel.add(dessertJLabel);\par
+\par
+        // set up beverageJComboBox\par
+        dessertJComboBox = new JComboBox();\par
+        dessertJComboBox.setBounds(150, 117, 150, 24);\par
+        menuItemsJPanel.add(dessertJComboBox);\par
+        dessertJComboBox.addItemListener(this::dessertJComboBoxItemStateChanged // **** TODO ****** anonymous inner class\par
+        // **** TODO ****** event handler called when item in beverageJComboBox\par
+        // **** TODO ****** is selected\par
+        // end anonymous inner class\par
+        ); // end addItemListener\par
+\par
+        \par
+       dessertJComboBox.addItem("");\par
+      \par
+       \par
+       beverageJComboBox.setEnabled(true);\par
+       appetizerJComboBox.setEnabled(true);\par
+       mainCourseJComboBox.setEnabled(true);\par
+       dessertJComboBox.setEnabled(true); \par
+    \par
+    \} // end method createMenuItemsJPanel\par
+\par
+    \par
+    private void loadTableNumbers()\par
+    \{\par
+       try\par
+       \{\par
+         myResultSet = myStatement.executeQuery(\par
+             "SELECT tableNumber FROM restaurantTables" );\par
+  \par
+          while ( myResultSet.next() == true )\par
+          \{\par
+           tableNumberJComboBox.addItem(valueOf( myResultSet.getInt( \par
+           "tableNumber" ) ) );\par
+          \}\par
+          \par
+       \} \par
+       catch ( SQLException exception )\par
+       \{\par
+       \}\par
+       \par
+       tableNumberJComboBox.addItemListener((ItemEvent event) -> \{\par
+            if (event.getStateChange() == SELECTED) \{\par
+                tableNumberJComboBoxItemStateChanged(event);\par
+            \}\par
+        \} // **** TODO ****** anonymous inner class\par
+        // **** TODO ****** event handler called when item in beverageJComboBox\par
+        // **** TODO ****** is selected\par
+        // end anonymous inner class\par
+        ); // end addItemListener\par
+    \}\par
+\par
+    private void loadCategory(String cate,JComboBox categoryJComboBox)\par
+    \{\par
+    \tab // read all items from database for specified category\par
+        try\par
+        \{\par
+           // obtain all items in specified category\par
+           myResultSet = myStatement.executeQuery( "SELECT item FROM "\par
+            + "Menu WHERE category = '" + cate + "'" );\par
+           // add items to JComboBox\par
+          while ( myResultSet.next() == true )\par
+           \{\par
+             categoryJComboBox.addItem( \par
+                 myResultSet.getString( "item" ) );\par
+         \}\par
+        \par
+         \} // end try\par
+        // catch SQLException\par
+        catch ( SQLException exception )\par
+        \{\par
+          exception.printStackTrace();\par
+       \}\par
+    \}\par
+    \par
+    private void tableNumberJComboBoxItemStateChanged(ItemEvent event)\par
+    \{\par
+      \par
+    \tab  String selectedtableNumber = (String) event.getItem();\par
+ \par
+    \tab  if(!selectedtableNumber.equals( "" )&&event.getStateChange() == SELECTED)\par
+            \{\par
+            // load table data\par
+            try\par
+            \{\par
+               myResultSet = myStatement.executeQuery("SELECT * FROM "\par
+                  + "restaurantTables WHERE tableNumber = " +\par
+                  parseInt( selectedtableNumber ) );\par
+             \par
+               \par
+             if ( myResultSet.next() == true )\par
+               \{\par
+                  waiterName.setText( \par
+                  myResultSet.getString( "waiterName" ) );\par
+                  subtotal = myResultSet.getDouble( "subtotal" );\par
+                    out.println( subtotal );\par
+                    out.println(waiterName);\par
+               \}\par
+               \par
+               \par
+              subtotalJTextField.setText(Double.toString(subtotal)); \par
+              taxJTextField.setText(Double.toString(TAX_RATE)); \par
+              totalJTextField.setText(Double.toString(total)); \par
+              \par
+               \par
+            \} // end try // end try\par
+            // catch SQLException\par
+            catch ( SQLException exception )\par
+            \{\par
+               exception.printStackTrace();\par
+            \}\par
+            \}\par
+      \par
+            // enable JComboBoxes in menuItemsJPanel\par
+            // disable JComboBox in waiterJPanel\par
+            menuItemsJPanel.setEnabled(true);\par
+            waiterJPanel.setEnabled(true);\par
+            tableNumberJComboBox.setEnabled(true);\par
+            beverageJComboBox.setEnabled(true); \par
+            dessertJComboBox.setEnabled(true);\par
+            mainCourseJComboBox.setEnabled(true);\par
+            appetizerJComboBox.setEnabled(true);\par
+            saveTableJButton.setEnabled( true );\par
+            payJButton.setEnabled(true);\par
+            calculateBillJButton.setEnabled(true);\par
+    \}\par
+\par
+    private void beverageJComboBoxItemStateChanged(ItemEvent event)\par
+    \{\par
+    \tab if ( event.getStateChange() == SELECTED )\par
+        \{\par
+           billItems.add(beverageJComboBox.getSelectedItem());\par
+        \}\par
+     \par
+    \par
+    \}\par
+    private void appetizerJComboBoxItemStateChanged(ItemEvent event)\par
+    \{\par
+    \tab if ( event.getStateChange() == SELECTED )\par
+        \{\par
+           billItems.add(appetizerJComboBox.getSelectedItem());\par
+        \}\par
+     \par
+    \par
+    \}\par
+    private void mainCourseJComboBoxItemStateChanged(ItemEvent event)\par
+    \{\par
+    \tab if ( event.getStateChange() == SELECTED )\par
+        \{\par
+           billItems.add(mainCourseJComboBox.getSelectedItem());\par
+        \}\par
+     \par
+    \par
+    \}\par
+    private void dessertJComboBoxItemStateChanged(ItemEvent event)\par
+    \{\par
+    \tab if ( event.getStateChange() == SELECTED )\par
+        \{\par
+           billItems.add(dessertJComboBox.getSelectedItem());\par
+        \}\par
+    \par
+    \par
+    \}\par
+    \par
+    private void saveTableJButtonActionPerformed(ActionEvent Event)\par
+    \{\par
+        \par
+      \par
+        updateTable(subtotal,waiterName.getText());\par
+        showMessageDialog(null,format("Saved Sucessfully","Saving....."));\par
+\par
+        subtotal=0.0;\par
+        total=0.0;\par
+        billItems.clear();\par
+        tableNumberJComboBox.setEnabled(true);\par
+        waiterName.setEnabled(true);\par
+        \par
+        \par
+    \}\par
+    \par
+    private void payBillJButtonActionPerformed(ActionEvent Event)\par
+    \{\par
+        \par
+    \tab subtotal=0.0; \par
+    \tab total=0.0;\par
+    \tab billItems.clear();\par
+    \tab updateTable(subtotal,waiterName.getText());\par
+    \tab showMessageDialog(null,format("Bill Paid","Updation...."));\par
+    \tab\par
+    \tab subtotalJTextField.setText(Double.toString(subtotal));\par
+        totalJTextField.setText(Double.toString(total)); \par
+    \par
+        \par
+        dessertJComboBox.setEnabled(false);\par
+        mainCourseJComboBox.setEnabled(false);\par
+        appetizerJComboBox.setEnabled(false);\par
+        beverageJComboBox.setEnabled(false);\par
+        \par
+        menuItemsJPanel.setEnabled(true);\par
+        waiterJPanel.setEnabled(true);\par
+        tableNumberJComboBox.setEnabled(true);\par
+        saveTableJButton.setEnabled( true );\par
+        calculateBillJButton.setEnabled(true);\par
+        payJButton.setEnabled(true);\par
+    \}\par
+    private void updateTable(double subtotal, String waiterName)\par
+    \{\par
+    \tab try\par
+        \{\par
+          \par
+             myStatement.executeUpdate("UPDATE restaurantTables "\par
+              + "set subtotal = " +\par
+               subtotal +",waitername = "+"'"+ waiterName +"'"+"where tableNumber = "+parseInt(tableNumberJComboBox.getSelectedItem().toString()));             \par
+        \par
+           \par
+           \par
+            out.println("Updated Sucessfully");\par
+  \tab      \par
+           \par
+        \} // end try\par
+        // catch SQLException\par
+        catch ( SQLException exception )\par
+        \{\par
+           exception.printStackTrace();\par
+        \}\par
+    \}\par
+    private void calculateBillJButtonActionPerformed(\par
+            ActionEvent event) \{\par
+      //Check if Waitername and Table name empty\par
+    \tab if(waiterName.getText()==null||tableNumberJComboBox.getSelectedItem()==null)\par
+    \tab\{\par
+    \tab      showMessageDialog(null,format("Waiter Name or Table Number is Empty","Enter Waiter Name or Table Number"));\par
+    \tab\}\par
+    \tab else\par
+    \tab\{\tab\par
+          subtotal = calculateSubtotal();\par
+    \tab subtotalJTextField.setText(Double.toString(subtotal));\par
+    \par
+    \tab taxJTextField.setText(Double.toString(TAX_RATE));\par
+    \tab\par
+    \tab total=(subtotal*TAX_RATE)+subtotal;\par
+    \tab\par
+    \tab totalJTextField.setText(Double.toString(total));\par
+            out.println(total);\par
+    \tab\}\par
+    \}\par
+private double calculateSubtotal()\par
+\{\par
+    double total2 = subtotal;\par
+      Object[] items = billItems.toArray();\par
+      \par
+      try  \{\par
+         \par
+            for (Object item : items) \{\par
+                myResultSet = myStatement.executeQuery("SELECT price " +\par
+                        "FROM Menu WHERE item = '" + item + "'");\par
+                // myResultSet not empty\par
+                if ( myResultSet.next() == true )\par
+                \{\par
+                    total2 += myResultSet.getDouble( "price" );\par
+                \}\par
+            \}\par
+      \} \par
+      catch ( SQLException exception )  \{\par
+         exception.printStackTrace();\par
+      \}\par
+      return total2;\par
+\}\par
+private void frameWindowClosing(WindowEvent event) \{\par
+    try \{\par
+               myConnection.close();\par
+               myResultSet.close();\par
+               myStatement.close();\par
+               out.println("Connection to DB closed");\par
+        \par
+\par
+               out.println("********************* Visit Again *************************");  \par
+    \par
+         \} catch (SQLException ex) \{\par
+               getLogger(RestaurantBillCalc.class.getName()).log(SEVERE, null, ex);\par
+           \}finally\{\par
+            exit(0);        \par
+    \}\par
+\}\par
+\par
+\par
+\par
+\par
+public static void main(String[] args) \{\par
+    \par
+         String databaseUserName = "johnpaul";\par
+         String databasePassword = "purlease";\par
+    \par
+    \par
+      /*  if(args.length!=1)\par
+        \{\par
+    \tab\tab JOptionPane.showMessageDialog(null,String.format("User Name is Empty","Enter User Name"));\tab\par
+    \tab\tab System.exit(0);\par
+    \tab\}\par
+    \tab else\par
+    \tab //\{\tab\tab\par
+    \tab //RestaurantBillCalc application\par
+           //     = new RestaurantBillCalc(args[0],"");\par
+        \par
+       // \}\par
+        \par
+    //  if(args.length==2)\par
+\{\par
+      //get command line arguments\par
+    \par
+  //String databaseUserName = args[0];\par
+  //String databasePassword = args[1]; */\par
+        \par
+ \par
+  \par
+  //create new RestaurantBillCalc\par
+  \par
+ RestaurantBillCalc application\par
+                = new RestaurantBillCalc("databaseUserName","databasePassword");\par
+\par
+ // else\par
+      \par
+ // \{\par
+  //    System.out.println("Usage:Java" + "RestaurantBillCalc databaseUserName, databasePassword");\par
+  \par
+  \par
+      \par
+\par
+\par
+\par
+       \par
+\par
+        application.loadTableNumbers();\par
+        application.loadCategory("Beverage",application.beverageJComboBox); \par
+        application.loadCategory("Appetizer",application.appetizerJComboBox);\par
+        application.loadCategory("Main Course",application.mainCourseJComboBox);\par
+        application.loadCategory("Dessert",application.dessertJComboBox);\par
+    \par
+    \tab\}\par
+\}\par
+   // end method main\par
+\par
+ /* if(args.length==2)\par
+\{\par
+      //get command line arguments\par
+    \par
+  String databaseUserName = args[0];\par
+  String databasePassword = args[1];\par
+  \par
+  //create new RestaurantBillCalc\par
+  \par
+  RestaurantBillCalc application\par
+                = new RestaurantBillCalc("org.apache.derby.jdbc.ClientDriver", "jdbc:derby://localhost:1527");\par
+\}\par
+  else\par
+      \par
+  \{\par
+      System.out.println("Uasge:Java" + "RestaurantBillCalc johnpaul purlease");\par
+  \}\par
+  \par
+      */\par
+\par
+\par
+\par
+// end class RestaurantBillCalculator  \par
+}
+ 
